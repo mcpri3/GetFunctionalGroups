@@ -53,7 +53,7 @@
 ## END OF HEADER ###############################################################
 
 
-PRE_FATE.speciesDistanceOverlap = function(mat.overlap.object
+PRE_FATE.speciesDistanceOverlap = function(mat.overlap.object, nme.pca
 ){
   library(utils)
   library(foreach)
@@ -74,8 +74,10 @@ PRE_FATE.speciesDistanceOverlap = function(mat.overlap.object
         
         ## Calculate PCA for all environment
         pca.env = dudi.hillsmith(tab.env, scannf = F, nf = 2)
-        scores.env = pca.env$li
+        saveRDS(pca.env, here::here(paste0('data/derived-data/ePCA/ePCA_', nme.pca)))
         
+        scores.env = pca.env$li
+ 
         ## Calculate overlap matrix
         PROGRESS = txtProgressBar(min = 0, max = ncol(tab.dom.PA), style = 3)
         grid.list = foreach(ii = 1:ncol(tab.dom.PA)) %do%
@@ -89,6 +91,9 @@ PRE_FATE.speciesDistanceOverlap = function(mat.overlap.object
               ind.1 = which(rownames(tab.env) %in% si.1)
               scores.sp1.01 = suprow(pca.env, tab.env[ind.01, ])$li
               scores.sp1.1 = suprow(pca.env, tab.env[ind.1, ])$li
+
+              openxlsx::write.xlsx(scores.sp1.1, here::here(paste0('data/derived-data/ePCA/SpeciesCoords_',colnames(tab.dom.PA)[ii], 
+                                                                   '_ePCA_',nme.pca, '.xlsx')))
               grid.clim.sp1 = ecospat.grid.clim.dyn(glob = scores.env
                                                     , glob1 = scores.sp1.01
                                                     , sp = scores.sp1.1

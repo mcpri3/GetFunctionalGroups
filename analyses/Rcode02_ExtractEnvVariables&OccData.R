@@ -17,12 +17,14 @@ lst.files <- list.files(here::here('data/raw-data/SIG/LinearStructures/'))
 r.lin.struc <- terra::rast(here::here(paste0('data/raw-data/SIG/LinearStructures/', lst.files)))
 r.lin.struc <- terra::subset(r.lin.struc, subset = grep('prop_tot', names(r.lin.struc)))
 names(r.lin.struc) <- unlist(lapply(strsplit(lst.files, '_'), function(x) {return(x[1])})) 
+names(r.lin.struc)[names(r.lin.struc) == 'LakeProportionImportance1-4'] <- 'LakeProportionImportance1to4'
 
 # Topography
 lst.files <- list.files(here::here('data/raw-data/SIG/Topography/'))
 r.topo <- terra::rast(here::here(paste0('data/raw-data/SIG/Topography/', lst.files)))
-names(r.topo)[names(r.topo) == 'prop_tot'] <- 'LakeProportion' 
-r.topo <- terra::subset(r.topo, subset = c(1:3))
+names(r.topo)[names(r.topo) == 'slope.mean'] <- 'MeanSlope' 
+names(r.topo)[names(r.topo) == 'alti.cv'] <- 'CValti' 
+names(r.topo)[names(r.topo) == 'alti.sd'] <- 'SDalti' 
 
 # Land composition
 r.land.syst <- terra::rast(here::here('data/raw-data/SIG/LandComposition/LandCover_Yue_WithConiferousForest_WithNA.tif'))
@@ -85,14 +87,18 @@ saveRDS(var, here::here('data/derived-data/EnvironmentalVariables_France_Res1000
 ########## Prep. occurrence file ################
 #################################################
 # Read list of SNAP species 
-lst.sp <- openxlsx::read.xlsx(here::here('data/derived-data/FinalList-of-SNAP-Vertebrate-Species_ActT-Diet-ForagS-NestH-Morpho-HabPref-DispDTraits.xlsx'))
+lst.sp <- openxlsx::read.xlsx(here::here('data/derived-data/FinalList-of-SNAP-Vertebrate-Species_ActT-Diet-ForagS-NestH-Morpho-HabPref-DispD-MoveMod-LifeHist-PressureTraits.xlsx'))
 
 final <- data.frame()
+
 for (s in unique(lst.sp$LB_NOM_VALIDE_SPE_LEVEL_SYN)) {
   
   s <- gsub(' ','_', s)
   
-  occur <- sf::st_read(here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/GBIFOccurrenceData_France_',s,'_Res1000m_2010-2020.gpkg')))
+  occur <- try(sf::st_read(here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/GBIFOccurrenceData_France_',s,'_Res1000m_2010-2020.gpkg'))))
+  
+  if (sum(class(occur) == 'try-error') == 0) {
+  
   occur$Nocc[occur$Nocc > 0] <- 1
   occur <- sf::st_drop_geometry(occur)
   
@@ -102,7 +108,55 @@ for (s in unique(lst.sp$LB_NOM_VALIDE_SPE_LEVEL_SYN)) {
     final <- cbind(final, data.frame(Nocc = occur$Nocc))
   }
   colnames(final)[ncol(final)] <- s
+  
+  } else  {
+    
+    occur <- try(sf::st_read(here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/INPNOccurrenceData_France_',s,'_Res1000m_2010-2020.gpkg'))))
+    
+    if (sum(class(occur) == 'try-error') == 0) {
+      
+    occur$Nocc[occur$Nocc > 0] <- 1
+    occur <- sf::st_drop_geometry(occur)
+    
+    if (class(try(cbind(final, data.frame(Nocc = occur$Nocc)))) == 'try-error') {
+      final <- data.frame(Nocc = occur$Nocc)
+    } else {
+      final <- cbind(final, data.frame(Nocc = occur$Nocc))
+    }
+    colnames(final)[ncol(final)] <- s
+  
+    } else {
+      
+      occur <- try(sf::st_read(here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/GBIF-INPNOccurrenceData_France_',s,'_Res1000m_2010-2020.gpkg'))))
+      
+      if (sum(class(occur) == 'try-error') == 0) {
+        
+        occur$Nocc[occur$Nocc > 0] <- 1
+        occur <- sf::st_drop_geometry(occur)
+        
+        if (class(try(cbind(final, data.frame(Nocc = occur$Nocc)))) == 'try-error') {
+          final <- data.frame(Nocc = occur$Nocc)
+        } else {
+          final <- cbind(final, data.frame(Nocc = occur$Nocc))
+        }
+        colnames(final)[ncol(final)] <- s
+        
+      }  else {
+        
+      occur <- sf::st_read(here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/IUCNOccurrenceData_France_',s,'_Res1000m_NoTime.gpkg')))
+      occur$Nocc[occur$Nocc > 0] <- 1
+      occur <- sf::st_drop_geometry(occur)
+      
+      if (class(try(cbind(final, data.frame(Nocc = occur$Nocc)))) == 'try-error') {
+        final <- data.frame(Nocc = occur$Nocc)
+      } else {
+        final <- cbind(final, data.frame(Nocc = occur$Nocc))
+      }
+      colnames(final)[ncol(final)] <- s
+      
+      }
+    }
+  }
 }
-
 rownames(final) <- paste0('pixel_', c(1:nrow(final)))
-saveRDS(final, here::here('data/derived-data/SNAP-Vertebrate-Species-GBIFOccurrenceData_France_Res1000m_2010-2020'))
+saveRDS(final, here::here('data/derived-data/SNAP-Vertebrate-Species-GBIF-INPN-IUCNOccurrenceData_France_Res1000m_2010-2020'))

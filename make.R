@@ -1,4 +1,4 @@
-#' CleanOccurrenceData: A Research Compendium
+#' GetFunctionalGroups: A Research Compendium
 #' 
 #' @description 
 #' A paragraph providing a full description of the project and describing each 

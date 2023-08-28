@@ -80,7 +80,7 @@ get_griddedOccur <- function(sp.occur, year.todo = c(2010:2022),
         grid.rast$year <- paste0(min(year.todo), '-', max(year.todo))
         terra::writeRaster(grid.rast, here::here(paste0('data/derived-data/SIG/Occurrence/AllYearsCombined/GBIFOccurrenceData_France_',
                                                         gsub(' ','_',unique(sp.occur$species)),'_Res1000m_',
-                                                        paste0(min(year.todo), '-', max(year.todo)) ,'.tif')))
+                                                        paste0(min(year.todo), '-', max(year.todo)) ,'.tif')), overwrite = T)
       }
       sum.up <- rbind(sum.up, data.frame(species = unique(sp.occur$species), year = NA , AllYearsCombined = paste0(min(year.todo), '-', max(year.todo)), Doable = 1))
       }

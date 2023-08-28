@@ -135,7 +135,7 @@ PRE_FATE.speciesDistanceCombine = function(list.mat.dist
     names_mat = paste0("DIST", 1:length(list.mat.dist))
   }
   
-  opt.weights = rep(1, length(list.mat.dist))
+  # opt.weights = rep(1, length(list.mat.dist))
   
   cat("\n\n #------------------------------------------------------------#")
   cat("\n # PRE_FATE.speciesDistanceCombine")
