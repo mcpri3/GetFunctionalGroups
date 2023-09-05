@@ -14,13 +14,12 @@ g = 'Mammalia'
 ############## Traits, env equal ############## 
 m = 'EqualTraitsEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = round(ncol(mat.dist)/5))
-# Get tree
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 20)
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 
 # Get groups
-k = 7 
+k = 11 # 6 et 11 sont ok 
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 # colors <- sample(fullcolor, length(unique(groups)))
@@ -42,12 +41,12 @@ combi.doable <- rbind(combi.doable, data.frame(group = g, Nclus = k, mode = m))
 ############## Traits, env half half ############## 
 m = 'HalfTraits-HalfEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = round(ncol(mat.dist)/5))
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 20)
 # Get tree
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 # Get groups
-k = 5 # 3 et 5 ok 
+k = 11 # 4 et 11 ok 
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 colors <- viridisLite::turbo(length(unique(groups)))
@@ -76,13 +75,13 @@ g = 'Aves'
 ############## Traits, env equal ############## 
 m = 'EqualTraitsEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 20)
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 25)
 # Get tree
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 
 # Get groups
-k = 18 #5, 13, 18 ok 
+k = 19 # 13 et 19 mais pas facile
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 # colors <- sample(fullcolor, length(unique(groups)))
@@ -104,12 +103,12 @@ combi.doable <- rbind(combi.doable, data.frame(group = g, Nclus = k, mode = m))
 ############## Traits, env half half ############## 
 m = 'HalfTraits-HalfEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 20)
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 25)
 # Get tree
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 # Get groups
-k = 18 #4, 8 et 18 ok
+k = 16 #11 et 16 
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 colors <- viridisLite::turbo(length(unique(groups)))
@@ -134,13 +133,13 @@ g = 'Anura-Squamata-Testudines-Urodela'
 ############## Traits, env equal ############## 
 m = 'EqualTraitsEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = round(ncol(mat.dist)/5))
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 15)
 # Get tree
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 
 # Get groups
-k = 9 #3, 6  et 9 ok 
+k = 11 # 7 ou 11
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 # colors <- sample(fullcolor, length(unique(groups)))
@@ -162,17 +161,17 @@ combi.doable <- rbind(combi.doable, data.frame(group = g, Nclus = k, mode = m))
 ############## Traits, env half half ############## 
 m = 'HalfTraits-HalfEnv'
 mat.dist <- readRDS(here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseCombinedDissimilarity_TraitsEnv_',g,'_Weight-', m)))
-dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = round(ncol(mat.dist)/5))
+dendro <- PRE_FATE.speciesClustering_step1(mat.species.DIST = list(mat.dist), opt.no_clust_max = 15)
 # Get tree
 dt.tree <- ape::as.phylo(dendro$clust.dendrograms[[1]])
 plot(dt.tree, type = "unrooted", no.margin = TRUE)
 # Get groups
-k = 7 #3 et 7 ok
+k = 7 # 3 et 7 ok ; 10 possible mais espèces seules 
 groups <- cutree(dendro$clust.dendrograms[[1]], k = k)
 # Plot
 colors <- viridisLite::turbo(length(unique(groups)))
 colors <-  colorspace::darken(colors, amount = 0.2)
-plot(dt.tree, type = "fan", no.margin = TRUE, tip.color = colors[groups], cex = 0.8)
+plot(dt.tree, type = "cladogram", no.margin = TRUE, tip.color = colors[groups], cex = 0.8)
 # Groups in a DF 
 groups <- data.frame(species = names(groups), cluster.id = c(groups))
 # groups <- PRE_FATE.speciesClustering_step2(clust.dendrograms = dendro$clust.dendrograms, mat.species.DIST = mat.dist, no.clusters = 13)

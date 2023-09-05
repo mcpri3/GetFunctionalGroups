@@ -24,7 +24,7 @@ env <- env[, colnames(env) != 'climatic.scd']
 occur <- readRDS(here::here('data/derived-data/SNAP-Vertebrate-Species-GBIF-INPN-IUCNOccurrenceData_France_Res1000m_2010-2020'))
 # Get taxonomic groups 
 vert.snap <- openxlsx::read.xlsx(here::here('data/derived-data/FinalList-of-SNAP-Vertebrate-Species_ActT-Diet-ForagS-NestH-Morpho-HabPref-DispD-MoveMod-LifeHist-PressureTraits.xlsx'))
-vert.snap <- vert.snap[, c('GROUP2_INPN', 'LB_NOM_VALIDE_SPE_LEVEL_SYN')]
+vert.snap <- vert.snap[, c('GROUP2_INPN', 'LB_NOM_VALIDE_SPE_LEVEL_SYN', 'mov.mode.swimmer')]
 vert.snap <- dplyr::distinct(vert.snap)
 vert.snap$METAGROUP <- ifelse(vert.snap$GROUP2_INPN %in% c('Amphibiens', 'Reptiles'), 'Anura-Squamata-Testudines-Urodela', vert.snap$GROUP2_INPN)
 vert.snap$METAGROUP <- gsub('Mammifères', 'Mammalia', vert.snap$METAGROUP)
@@ -81,70 +81,7 @@ p2 <- ggplot() +
 p2
 ggsave(p2, path = here::here('figures/'), filename = 'PCAe_Climatic_Topo.png', width = 17, height = 7.4)
 
-# ############## Get species distribution on PCA axes ########
-# scores.env = pca.env$li
-# PROGRESS = txtProgressBar(min = 0, max = ncol(occur), style = 3)
-# grid.list = foreach(ii = 1:ncol(occur)) %do%
-#   {
-#     setTxtProgressBar(pb = PROGRESS, value = ii)
-#     si.01 = rownames(occur)[which(!is.na(occur[, ii]))]
-#     si.1 = rownames(occur)[which(occur[, ii] > 0)]
-#     if (length(si.1) >= 5)
-#     {
-#       ind.01 = which(rownames(subenv) %in% si.01)
-#       ind.1 = which(rownames(subenv) %in% si.1)
-#       scores.sp1.01 = suprow(pca.env, subenv[ind.01, ])$li
-#       scores.sp1.1 = suprow(pca.env, subenv[ind.1, ])$li
-#       grid.clim.sp1 = ecospat.grid.clim.dyn(glob = scores.env
-#                                             , glob1 = scores.sp1.01
-#                                             , sp = scores.sp1.1
-#                                             , R = 100, th.sp = 0)
-#       return(grid.clim.sp1)
-#     } else { return(NULL) }
-#   }
-# close(PROGRESS)
-# 
-# ############## Get species niche overlap ########
-# n.sel = ncol(occur)
-# mat.overlap = matrix(NA, nrow = n.sel, ncol = n.sel
-#                      , dimnames = list(colnames(occur), colnames(occur)))
-# PROGRESS = txtProgressBar(min = 0, max = n.sel, style = 3)
-# for (ii in 1:(n.sel-1))
-# {
-#   setTxtProgressBar(pb = PROGRESS, value = ii)          
-#   if (!is.null(grid.list[[ii]]))
-#   {
-#     for(jj in (ii+1):n.sel)
-#     {
-#       if (!is.null(grid.list[[jj]]))
-#       {
-#         res = ecospat.niche.overlap(grid.list[[ii]], grid.list[[jj]], cor = TRUE)$D
-#         mat.overlap[ii, jj] = res
-#       }
-#     }
-#   }
-# }
-# close(PROGRESS)
-# mat.overlap[lower.tri(mat.overlap, diag = FALSE)] = t(mat.overlap)[lower.tri(mat.overlap, diag = FALSE)]
-# diag(mat.overlap) = 1
-# 
-# ## Remove species with no overlap
-# no_NA_values = apply(mat.overlap, 2, function(x) sum(is.na(x)))
-# ind_NA_values = which(no_NA_values >= nrow(mat.overlap) - 1)
-# if (length(ind_NA_values) > 0)
-# {
-#   warning(paste0("Missing data!\n `mat.overlap` contains some species with no overlap values : "
-#                  , paste0(colnames(mat.overlap)[ind_NA_values], collapse = ", ")
-#                  , "\nThese species will not be taken into account ! \n\n"
-#   ))
-#   mat.overlap = mat.overlap[-ind_NA_values, -ind_NA_values]
-# }
-# 
-# ## Transform into dissimilarity distances (instead of similarity)
-# mat.OVERLAP = (1 - mat.overlap)
-# saveRDS(mat.OVERLAP, here::here(paste0('data/derived-data/SNAP-Vertebrate-Species_PairwiseNicheOverlap_LandCompo_LinStruct')))
-
-# # Run PCA 
+# # Run ePCA using FATE 
 lst.acp <- list(c('land.compo', 'lin.struct'), c('topo', 'climatic'))
 nms.group.acp <- c('Land cover', 'Abiotic conditions')
 names(lst.acp) <- nms.group.acp
@@ -204,26 +141,30 @@ df$METAGROUP <- traits$METAGROUP
 df <- dplyr::distinct(df)
 
 # Run dissimilarity matrix estimation 
-lst.traits2 <- list('life.hist', c('forag.strat','diet'), c('dispersal','mov.mode','act.time'), c('nest.hab', 'hab.pref'), 'morpho',  'pressure')
-nms.group.trait <- c('Reproductive traits', 'Foraging behaviour', 'Movement behaviour', 'Habitat requirement', 'Morphology', 'Vulnerability to pressures')
+lst.traits2 <- list('life.hist', c('forag.strat','diet'), c('dispersal','mov.mode','act.time'), c('nest.hab', 'hab.pref'), 'morpho',  'pressure', 'aquatic')
+nms.group.trait <- c('Reproductive traits', 'Foraging behaviour', 'Movement behaviour', 'Habitat requirement', 'Morphology', 'Vulnerability to pressures', 'Aquatic')
 names(lst.traits2) <- nms.group.trait
 
 for (g in unique(df$METAGROUP)) {
-
+  df2 <- df
+  if (g %in% c('Mammalia', 'Aves')) {colnames(df2)[colnames(df2) == 'mov.mode.swimmer'] <- 'aquatic'}
+  
 for (l in nms.group.trait) {
   
   col.id <- lst.traits2[names(lst.traits2) == l][[1]]
   col.tokeep <- c()
   for (c in col.id) {
-    col.tokeep <- c(col.tokeep, grep(c, colnames(df)))
+    col.tokeep <- c(col.tokeep, grep(c, colnames(df2)))
   }
   
-  subdf <- as.data.frame(df[df$METAGROUP == g, col.tokeep])
-  mat.trait.dis <- as.matrix(FD::gowdis(subdf))
+  subdf <- as.data.frame(df2[df2$METAGROUP == g, col.tokeep])
+  mat.trait.dis <- try(as.matrix(FD::gowdis(subdf)))
+  if (sum(class(mat.trait.dis) %in% 'try-error') == 0) {
   rownames(mat.trait.dis) <- gsub(' ','_', df$species[df$METAGROUP == g])
   colnames(mat.trait.dis) <- gsub(' ','_', df$species[df$METAGROUP == g])
   saveRDS(mat.trait.dis, here::here(paste0('data/derived-data/DissimilarityMatrices/SNAP-Vertebrate-Species_PairwiseTraitsDissimilarity_', g, '_', gsub(' ', '-' ,l ))))
-}
+  }
+  }
 }
 
 #####################################################
